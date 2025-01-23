@@ -9,7 +9,57 @@
 </head>
 
 <body>
-    <h1>Hello Class</h1>
+    <h1>Deck API Client</h1>
+    <div>
+        <button id="create-deck-btn">Create Deck</button>
+        <button id="shuffle-deck-btn" disabled>Shuffle Deck</button>
+        <button id="draw-card-btn" disabled>Draw Card</button>
+    </div>
+    <div id="card-display">No card drawn yet.</div>
+
+    <script>
+        let currentDeckId = null;
+
+        // Create a new deck
+        document.getElementById('create-deck-btn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/temp/deck', { method: 'POST' });
+                const data = await response.json();
+                currentDeckId = data.deck_id;
+                alert(`New deck created with ID: ${currentDeckId}`);
+                
+                // Enable the shuffle and draw buttons
+                document.getElementById('shuffle-deck-btn').disabled = false;
+                document.getElementById('draw-card-btn').disabled = false;
+            } catch (error) {
+                console.error('Error creating deck:', error);
+            }
+        });
+
+        // Shuffle the deck
+        document.getElementById('shuffle-deck-btn').addEventListener('click', async () => {
+            if (!currentDeckId) return alert('Create a deck first!');
+            try {
+                const response = await fetch(`/temp/deck/shuffle/${currentDeckId}`, { method: 'PATCH' });
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                console.error('Error shuffling deck:', error);
+            }
+        });
+
+        // Draw a card from the deck
+        document.getElementById('draw-card-btn').addEventListener('click', async () => {
+            if (!currentDeckId) return alert('Create a deck first!');
+            try {
+                const response = await fetch(`/temp/deck/${currentDeckId}/card`);
+                const data = await response.json();
+                document.getElementById('card-display').textContent = `You drew: ${data.card}`;
+            } catch (error) {
+                console.error('Error drawing card:', error);
+            }
+        });
+    </script>
 </body>
 
 </html>
