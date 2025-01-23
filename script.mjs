@@ -27,25 +27,25 @@ function createDeck() {
     return deck;
 }
 
-// Helper function to shuffle a deck
+// Helper function to shuffle deck
 function shuffleDeck(deck) {
     for (let i = deck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]]; // Swap elements
+        [deck[i], deck[j]] = [deck[j], deck[i]];
     }
 }
 
-// POST /temp/deck - Create a new deck
-server.post('/temp/deck', (req, res) => {
+//Create a deck
+function createDeckSeed(req, res){
     const deckId = uuidv4(); // Generate a unique ID for the deck
     const deck = createDeck(); // Create a standard deck of 52 cards
-    decks[deckId] = deck; // Store the deck on the server
+    decks[deckId] = deck;
 
     res.status(HTTP_CODES.SUCCESS.CREATED).send({ deck_id: deckId }).end();
-});
+}
 
-// PATCH /temp/deck/shuffle/:deck_id - Shuffle the specified deck
-server.patch('/temp/deck/shuffle/:deck_id', (req, res) => {
+//Shuffle the deck
+function deckShuffle(req, res){
     const { deck_id } = req.params;
 
     if (!decks[deck_id]) {
@@ -62,11 +62,11 @@ server.patch('/temp/deck/shuffle/:deck_id', (req, res) => {
 
     shuffleDeck(decks[deck_id]);
     res.status(HTTP_CODES.SUCCESS.OK).send({ message: `Deck ${deck_id} has been shuffled.` }).end();
-});
+}
 
 
-// GET /temp/deck/:deck_id - Return the entire deck (remaining cards)
-server.get('/temp/deck/:deck_id', (req, res) => {
+//Return the deck
+function createDeckiD(req, res){
     const { deck_id } = req.params;
 
     if (!decks[deck_id]) {
@@ -74,10 +74,10 @@ server.get('/temp/deck/:deck_id', (req, res) => {
     }
 
     res.status(HTTP_CODES.SUCCESS.OK).send({ deck: decks[deck_id] }).end();
-});
+}
 
-// GET /temp/deck/:deck_id/card - Draw and return a random card
-server.get('/temp/deck/:deck_id/card', (req, res) => {
+//Draw a random card
+function drawCard(req, res){
     const { deck_id } = req.params;
 
     if (!decks[deck_id]) {
@@ -90,12 +90,12 @@ server.get('/temp/deck/:deck_id/card', (req, res) => {
     }
 
     const randomIndex = Math.floor(Math.random() * deck.length);
-    const card = deck.splice(randomIndex, 1)[0]; // Remove the card from the deck
+    const card = deck.splice(randomIndex, 1)[0];
 
     res.status(HTTP_CODES.SUCCESS.OK).send({ card }).end();
-});
+}
 
-// Endpoints for quotes and other functionalities
+// Endpoints for quotes
 const quotes = [
     "I am on a seafood diet. I see food and I eat it.",
     "Age is of no importance unless you're a cheese. — Billie Burke",
@@ -142,6 +142,10 @@ server.get("/tmp/poem", getPoem);
 server.get("/tmp/quote", getRandomQuote);
 server.post("/tmp/sum/:a/:b", postSum);
 server.get("/tmp/sum/:a/:b", postSum);
+server.post("/temp/deck", createDeckSeed);
+server.patch("/temp/deck/shuffle/:deck_id", deckShuffle);
+server.get("/temp/deck/:deck_id", createDeckiD);
+server.get("/temp/deck/:deck_id/card", drawCard);
 
 server.listen(server.get('port'), function () {
     console.log('Server running on port', server.get('port'));
