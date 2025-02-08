@@ -1,20 +1,35 @@
 import express from 'express';
+import session from 'express-session';
+import FileStore from 'session-file-store';
 import { v4 as uuidv4 } from 'uuid';
 import HTTP_CODES from './utils/httpCodes.mjs';
 import log from './modules/log.mjs';
 import { LOGG_LEVELS, eventLogger } from './modules/log.mjs';
 
+const FileStoreInstance = FileStore(session);
 const ENABLE_LOGGING = false;
-
 const server = express();
 const port = process.env.PORT || 8000;
 
 const logger = log(LOGG_LEVELS.VERBOSE);
-
 server.set('port', port);
 server.use(logger);
 server.use(express.static('public'));
-server.use(express.json()); // Middleware to parse JSON request bodies
+server.use(express.json());
+
+server.use(session({
+    store: new FileStoreInstance({ path: './sessions', retries: 1 }),
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day
+}));
+
+server.get('/session', (req, res) => {
+    if (!req.session.sessionId) {
+        req.session.sessionId = uuidv4();
+    }
+    res.status(HTTP_CODES.SUCCESS.OK).send({ sessionId: req.session.sessionId });
+});
 
 // Global variable to store decks
 const decks = {};
