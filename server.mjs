@@ -1,11 +1,18 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import HTTP_CODES from './utils/httpCodes.mjs';
+import log from './modules/log.mjs';
+import { LOGG_LEVELS, eventLogger } from './modules/log.mjs';
+
+const ENABLE_LOGGING = false;
 
 const server = express();
 const port = process.env.PORT || 8000;
 
+const logger = log(LOGG_LEVELS.VERBOSE);
+
 server.set('port', port);
+server.use(logger);
 server.use(express.static('public'));
 server.use(express.json()); // Middleware to parse JSON request bodies
 
@@ -111,6 +118,7 @@ function getRandomQuote(req, res, next) {
 }
 
 function getRoot(req, res, next) {
+    eventLogger("Noen spurte etter root");
     res.status(HTTP_CODES.SUCCESS.OK).send('Hello World').end();
 }
 
@@ -146,6 +154,7 @@ server.post("/temp/deck", createDeckSeed);
 server.patch("/temp/deck/shuffle/:deck_id", deckShuffle);
 server.get("/temp/deck/:deck_id", createDeckiD);
 server.get("/temp/deck/:deck_id/card", drawCard);
+
 
 server.listen(server.get('port'), function () {
     console.log('Server running on port', server.get('port'));
