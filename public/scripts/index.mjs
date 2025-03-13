@@ -1,3 +1,7 @@
+const apiUrl = window.location.origin.includes('localhost') 
+    ? 'http://localhost:8000' 
+    : 'https://demo25-n8yp.onrender.com';
+
 // Logout
 document.getElementById("logout-button").addEventListener("click", () => {
     // removes stored token
@@ -11,7 +15,7 @@ async function fetchLogs() {
     try {
         console.log("Fetching logs from the server...");
 
-        const response = await fetch("http://localhost:8000/api/log");
+        const response = await fetch(`${apiUrl}/api/log`);
         console.log("Response received:", response);
 
         if (!response.ok) {
@@ -64,7 +68,7 @@ document.getElementById("log-form").addEventListener("submit", async (event) => 
     }
 
     try {
-        const response = await fetch("http://localhost:8000/api/log", {
+        const response = await fetch(`${apiUrl}/api/log`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -108,7 +112,7 @@ function editLog(log) {
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/api/log/${log.id}`, {
+            const response = await fetch(`${apiUrl}/api/log${log.id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
@@ -143,7 +147,7 @@ async function deleteLog(id) {
     if (!confirm("Are you sure you want to delete this log?")) return;
 
     try {
-        const response = await fetch(`http://localhost:8000/api/log/${id}`, {
+        const response = await fetch(`${apiUrl}/api/log/${id}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json"

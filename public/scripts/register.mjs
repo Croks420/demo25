@@ -1,3 +1,8 @@
+const apiUrl = window.location.origin.includes('localhost') 
+    ? 'http://localhost:8000' 
+    : 'https://demo25-n8yp.onrender.com';
+
+
 // Register script
 document.getElementById("register-form").addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -12,7 +17,7 @@ document.getElementById("register-form").addEventListener("submit", async functi
     }
 
     try {
-        const response = await fetch("http://localhost:8000/api/user/register", {
+        const response = await fetch(`${apiUrl}/api/user/register`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
