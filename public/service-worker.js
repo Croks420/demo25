@@ -2,7 +2,9 @@ const CACHE_NAME = 'deck-api-cache-v1';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
+    '/login.html',
     '/css/style.css',
+    '/css/loginStyle.css',
     '/manifest.json',
     '/service-worker.js',
     '/icons/icon-192x192.png',

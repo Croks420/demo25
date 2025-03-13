@@ -10,64 +10,197 @@
 </head>
 
 <body>
-    <h1>Deck API Client</h1>
-    <div>
-        <button id="create-deck-btn">Create Deck</button>
-        <button id="shuffle-deck-btn" disabled>Shuffle Deck</button>
-        <button id="draw-card-btn" disabled>Draw Card</button>
-    </div>
-    <div id="card-display">No card drawn yet.</div>
+
+    <h2>Logs</h2>
+    <ul id="logs-list"></ul> <!-- ✅ Add this to show logs -->
+
+    <!-- Add Log Form -->
+    <form id="log-form">
+        <input type="text" id="title" placeholder="Title" required>
+        <input type="text" id="description" placeholder="Description" required>
+        <button type="submit">Add Log</button>
+    </form>    
+
+    <!-- Edit Log Form (Initially hidden) -->
+    <form id="edit-log-form" style="display:none;">
+        <input type="text" id="edit-title" placeholder="Title" required>
+        <input type="text" id="edit-description" placeholder="Description" required>
+        <button type="submit">Update Log</button>
+        <button type="button" id="cancel-edit">Cancel</button>
+    </form>
 
     <script>
-        let currentDeckId = null;
-
-        // Create a new deck
-        document.getElementById('create-deck-btn').addEventListener('click', async () => {
-            try {
-                const response = await fetch('/temp/deck', { method: 'POST' });
-                const data = await response.json();
-                currentDeckId = data.deck_id;
-                alert(`New deck created with ID: ${currentDeckId}`);
-                
-                // Enable the shuffle and draw buttons
-                document.getElementById('shuffle-deck-btn').disabled = false;
-                document.getElementById('draw-card-btn').disabled = false;
-            } catch (error) {
-                console.error('Error creating deck:', error);
-            }
-        });
-
-        // Shuffle the deck
-        document.getElementById('shuffle-deck-btn').addEventListener('click', async () => {
-            if (!currentDeckId) return alert('Create a deck first!');
-            try {
-                const response = await fetch(`/temp/deck/shuffle/${currentDeckId}`, { method: 'PATCH' });
-                const data = await response.json();
-                alert(data.message);
-            } catch (error) {
-                console.error('Error shuffling deck:', error);
-            }
-        });
-
-        // Draw a card from the deck
-        document.getElementById('draw-card-btn').addEventListener('click', async () => {
-            if (!currentDeckId) return alert('Create a deck first!');
-            try {
-                const response = await fetch(`/temp/deck/${currentDeckId}/card`);
-                const data = await response.json();
-                document.getElementById('card-display').textContent = `You drew: ${data.card}`;
-            } catch (error) {
-                console.error('Error drawing card:', error);
-            }
-        });
-
+        // Register Service Worker
         if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-            .then(reg => console.log('Service Worker registered!', reg))
-            .catch(err => console.error('Service Worker registration failed:', err));
-    });
-}
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('Service Worker registered!', reg))
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
+        }
+
+        async function fetchLogs() {
+            try {
+                console.log("Fetching logs from the server...");
+
+                const response = await fetch("http://localhost:8000/api/log");
+                console.log("Response received:", response);
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch logs');
+                }
+
+                const logs = await response.json();
+                console.log("Logs data:", logs);
+
+                const logsList = document.getElementById("logs-list");
+                logsList.innerHTML = ""; // Clear previous logs
+
+                logs.forEach(log => {
+                    const listItem = document.createElement("li");
+                    const logDate = new Date(log.log_date).toLocaleDateString();
+                    listItem.textContent = `${logDate}: ${log.title} - ${log.description}`;
+
+                    // Create an Edit button
+                    const editButton = document.createElement("button");
+                    editButton.textContent = "Edit";
+                    editButton.style.marginLeft = "10px";
+                    editButton.onclick = () => editLog(log); // Attach edit function
+
+                    // Create a Delete button
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "Delete";
+                    deleteButton.style.marginLeft = "10px";
+                    deleteButton.onclick = () => deleteLog(log.id); // Attach delete function
+
+                    listItem.appendChild(editButton);
+                    listItem.appendChild(deleteButton);
+                    logsList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error("Error fetching logs:", error);
+            }
+        }
+
+        fetchLogs();  // Call the function to fetch logs
+
+        // Add Log Form Submission
+        document.getElementById("log-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const title = document.getElementById("title").value;
+            const description = document.getElementById("description").value;
+
+            if (!title || !description) {
+                alert("Title and description are required.");
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:8000/api/log", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ title, description })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to add log");
+                }
+
+                const newLog = await response.json();
+                console.log("Log added:", newLog);
+
+                // Refresh logs list after adding a new log
+                fetchLogs();
+
+                // Clear input fields
+                document.getElementById("title").value = "";
+                document.getElementById("description").value = "";
+            } catch (error) {
+                console.error("Error adding log:", error);
+            }
+        });
+
+        // Edit Log Functionality
+        function editLog(log) {
+            // Show the edit form with the current log data
+            document.getElementById("edit-title").value = log.title;
+            document.getElementById("edit-description").value = log.description;
+
+            // Hide the add form and show the edit form
+            document.getElementById("log-form").style.display = "none";
+            document.getElementById("edit-log-form").style.display = "block";
+
+            // Add a submit event to update the log
+            document.getElementById("edit-log-form").onsubmit = async (event) => {
+                event.preventDefault();
+
+                const title = document.getElementById("edit-title").value;
+                const description = document.getElementById("edit-description").value;
+
+                if (!title || !description) {
+                    alert("Title and description are required.");
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`http://localhost:8000/api/log/${log.id}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ title, description })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Failed to update log");
+                    }
+
+                    const updatedLog = await response.json();
+                    console.log("Log updated:", updatedLog);
+
+                    // Refresh logs list after updating the log
+                    fetchLogs();
+
+                    // Hide the edit form and show the add form
+                    document.getElementById("log-form").style.display = "block";
+                    document.getElementById("edit-log-form").style.display = "none";
+                } catch (error) {
+                    console.error("Error updating log:", error);
+                }
+            };
+        }
+
+        // Cancel Edit Log
+        document.getElementById("cancel-edit").addEventListener("click", () => {
+            document.getElementById("log-form").style.display = "block";
+            document.getElementById("edit-log-form").style.display = "none";
+        });
+
+        // Delete Log
+        async function deleteLog(id) {
+            if (!confirm("Are you sure you want to delete this log?")) return;
+
+            try {
+                const response = await fetch(`http://localhost:8000/api/log/${id}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to delete log");
+                }
+
+                console.log("Log deleted successfully");
+                fetchLogs(); // Refresh the log list
+            } catch (error) {
+                console.error("Error deleting log:", error);
+            }
+        }
 
     </script>
 </body>

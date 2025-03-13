@@ -1,20 +1,135 @@
 body {
     font-family: Arial, sans-serif;
     padding: 20px;
-    background-color: #f9f9f9;
-}
-h1 {
+    background-color: #f4f4f4;
     color: #333;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
 }
+
+h1, h2 {
+    color: #222;
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
 button {
     margin: 10px 0;
-    padding: 10px 15px;
+    padding: 12px 18px;
     font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
+    transition: background 0.3s ease-in-out;
+    width: auto; /* Ensures buttons do not stretch */
 }
+
+button:hover {
+    background-color: #45a049;
+}
+
 #card-display {
     margin-top: 20px;
+    padding: 15px;
     font-size: 24px;
     font-weight: bold;
     color: #4CAF50;
+    background: white;
+    border: 2px solid #4CAF50;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    width: fit-content;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 600px;
+    text-align: left;
+}
+
+li {
+    background-color: white;
+    padding: 15px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+li button {
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+li button {
+    width: 13%; /* Make buttons full width */
+    margin-top: 8px; /* Add spacing between buttons */
+    font-size: 14px;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+/* Style Edit button (default style) */
+li button:first-of-type {
+    background-color: #007BFF;
+    color: white;
+}
+
+li button:first-of-type:hover {
+    background-color: #0056b3;
+}
+
+/* Style Delete button */
+li button:last-of-type {
+    background-color: #DC3545; /* Red color */
+    color: white;
+}
+
+li button:last-of-type:hover {
+    background-color: #b02a37; /* Darker red on hover */
+}
+
+form {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+form input {
+    margin: 8px 0;
+    padding: 10px;
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+form button {
+    margin-top: 10px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }
