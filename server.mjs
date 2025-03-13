@@ -1,8 +1,6 @@
 import express from 'express';
 import session from 'express-session';
 import FileStore from 'session-file-store';
-import { v4 as uuidv4 } from 'uuid';
-import gameTTTRouter from './router/ticTacToeRouter.mjs';
 import logRouter from './router/logRoute.mjs';
 import authRouter from './router/userRoutes.mjs';
 import HTTP_CODES from './utils/httpCodes.mjs';
@@ -20,7 +18,7 @@ const port = process.env.PORT || 8000;
 const logger = log(LOGG_LEVELS.VERBOSE);
 server.set('port', port);
 server.use(logger);
-server.use(express.static('public', { index: false })); // Prevents serving index.html automatically
+server.use(express.static('public', { index: false }));
 server.use(express.json());
 
 server.use(session({
@@ -28,11 +26,11 @@ server.use(session({
     secret: process.env.SESSION_SECRET || 'super-secret-key',
     resave: false,
     saveUninitialized: true,
-    cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day
+    cookie: { maxAge: 1000 * 60 * 60 * 24 }
 }));
 
 server.get('/', (req, res) => {
-    res.redirect('/login'); // Redirect to login page
+    res.redirect('/login'); // sends you to login
 });
 
 server.get('/login', (req, res) => {
@@ -46,13 +44,12 @@ server.get('/session', (req, res) => {
     res.status(HTTP_CODES.SUCCESS.OK).send({ sessionId: req.session.sessionId });
 });
 
-// Register routes
-server.use('/api/game', gameTTTRouter);
+// Register
 server.use('/api', logRouter);
 server.use('/api/user', authRouter);
 
 // Start the server
 server.listen(port, async () => {
     console.log('Server running on port', port);
-    await open(`http://localhost:${port}/login`); // Open /login instead of /
+    await open(`http://localhost:${port}/login`); // opens with login page
 });

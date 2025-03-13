@@ -28,7 +28,6 @@ button {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background 0.3s ease-in-out;
     width: auto; /* Ensures buttons do not stretch */
 }
 
