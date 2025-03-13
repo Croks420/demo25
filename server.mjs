@@ -7,13 +7,12 @@ import logRouter from './router/logRoute.mjs';
 import authRouter from './router/userRoutes.mjs';
 import HTTP_CODES from './utils/httpCodes.mjs';
 import log from './modules/log.mjs';
-import { LOGG_LEVELS, eventLogger } from './modules/log.mjs';
+import { LOGG_LEVELS } from './modules/log.mjs';
 import cors from 'cors';
 import path from 'path';
 import open from 'open';
 
 const FileStoreInstance = FileStore(session);
-const ENABLE_LOGGING = false;
 const server = express();
 server.use(cors());
 const port = process.env.PORT || 8000;
@@ -21,7 +20,7 @@ const port = process.env.PORT || 8000;
 const logger = log(LOGG_LEVELS.VERBOSE);
 server.set('port', port);
 server.use(logger);
-server.use(express.static('public'));
+server.use(express.static('public', { index: false })); // Prevents serving index.html automatically
 server.use(express.json());
 
 server.use(session({
@@ -32,16 +31,19 @@ server.use(session({
     cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day
 }));
 
+server.get('/', (req, res) => {
+    res.redirect('/login'); // Redirect to login page
+});
+
+server.get('/login', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'public', 'login.html'));
+});
+
 server.get('/session', (req, res) => {
     if (!req.session.sessionId) {
         req.session.sessionId = uuidv4();
     }
     res.status(HTTP_CODES.SUCCESS.OK).send({ sessionId: req.session.sessionId });
-});
-
-// 🔹 Serve login.html when accessing "/"
-server.get('/login', (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'public', 'login.html'));
 });
 
 // Register routes
@@ -52,7 +54,5 @@ server.use('/api/user', authRouter);
 // Start the server
 server.listen(port, async () => {
     console.log('Server running on port', port);
-    
-    // 🔹 Automatically open login.html in default browser
-    await open(`http://localhost:${port}/`);
+    await open(`http://localhost:${port}/login`); // Open /login instead of /
 });
